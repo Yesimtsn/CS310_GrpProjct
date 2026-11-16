@@ -32,7 +32,7 @@ class AppTheme {
     return ThemeData(
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.background,
-      // TODO(frontend): add Poppins (assets/fonts + pubspec) and set fontFamily.
+      fontFamily: 'Poppins',
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
