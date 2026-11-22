@@ -51,17 +51,22 @@ class EventService extends ChangeNotifier {
 
   /// Home feed. [category] null means "All".
   /// "This week" means today plus the next 7 days.
+  /// [query] is the search bar text: matches title, location or description,
+  /// ignoring case; empty means no search.
   List<Event> filteredEvents({
     EventCategory? category,
     DateFilter date = DateFilter.any,
+    String query = '',
   }) {
     final now = _clock();
     final startOfToday = DateTime(now.year, now.month, now.day);
     final endOfToday = startOfToday.add(const Duration(days: 1));
     final endOfWeek = startOfToday.add(const Duration(days: 8));
+    final q = query.trim().toLowerCase();
 
     return upcomingEvents.where((e) {
       if (category != null && e.category != category) return false;
+      if (q.isNotEmpty && !_matches(e, q)) return false;
       switch (date) {
         case DateFilter.any:
           return true;
@@ -233,6 +238,12 @@ class EventService extends ChangeNotifier {
   }
 
   // ---------------------------------------------------------------- helpers
+
+  /// [q] is already trimmed and lower-case.
+  bool _matches(Event e, String q) =>
+      e.title.toLowerCase().contains(q) ||
+      e.location.toLowerCase().contains(q) ||
+      e.description.toLowerCase().contains(q);
 
   void _replace(Event updated) {
     final i = _events.indexWhere((e) => e.id == updated.id);
