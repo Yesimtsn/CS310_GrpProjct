@@ -21,11 +21,27 @@ class _HomeScreenState extends State<HomeScreen> {
   EventCategory? _category;
   DateFilter _date = DateFilter.any;
 
+  /// Search bar text; matched against title, location and description.
+  final _searchCtrl = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  void _clearSearch() {
+    _searchCtrl.clear();
+    setState(() => _query = '');
+  }
+
   @override
   Widget build(BuildContext context) {
     final events = context.watch<EventService>().filteredEvents(
       category: _category,
       date: _date,
+      query: _query,
     );
 
     return Scaffold(
@@ -59,6 +75,26 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: TextField(
+              controller: _searchCtrl,
+              onChanged: (v) => setState(() => _query = v),
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                hintText: 'Search events or places',
+                isDense: true,
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _query.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Clear search',
+                        icon: const Icon(Icons.close),
+                        onPressed: _clearSearch,
+                      ),
+              ),
+            ),
+          ),
           _FilterRow(
             labels: ['All', ...EventCategory.values.map((c) => c.label)],
             selected: _category == null ? 0 : _category!.index + 1,
@@ -73,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Expanded(
             child: events.isEmpty
-                ? const _EmptyState()
+                ? _EmptyState(searching: _query.trim().isNotEmpty)
                 : ListView.separated(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
                     itemCount: events.length,
@@ -143,7 +179,8 @@ class _FilterRow extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  final bool searching;
+  const _EmptyState({required this.searching});
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +197,9 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'No events match these filters.',
+              searching
+                  ? 'No events match your search.'
+                  : 'No events match these filters.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium
                   ?.copyWith(color: AppColors.textSecondary),

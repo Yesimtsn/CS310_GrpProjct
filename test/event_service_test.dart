@@ -33,6 +33,23 @@ void main() {
       expect(events.filteredEvents(date: DateFilter.thisWeek).length, 4);
       expect(events.filteredEvents(date: DateFilter.today), isEmpty);
     });
+
+    test('search matches title, location or description, ignoring case', () {
+      List<String> ids(String q) =>
+          events.filteredEvents(query: q).map((e) => e.id).toList();
+      expect(ids('volleyBALL'), ['e3']); // title + location
+      expect(ids('  catan '), ['e4']); // description, trimmed
+      expect(ids('university center'), ['e4']); // location
+      expect(ids('no such event'), isEmpty);
+      expect(ids('').length, events.upcomingEvents.length);
+      // Search combines with the category filter.
+      expect(
+        events
+            .filteredEvents(category: EventCategory.sports, query: 'study')
+            .map((e) => e.id),
+        isEmpty,
+      );
+    });
   });
 
   group('join / leave', () {
