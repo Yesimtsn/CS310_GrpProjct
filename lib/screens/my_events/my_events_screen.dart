@@ -171,14 +171,18 @@ class _MyEventCard extends StatelessWidget {
                 style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 8),
-              Row(
+              // Wrap so a long label or big system font moves the button to
+              // its own line instead of overflowing on narrow phones.
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
-                  Expanded(
-                    child: Text(
-                      event.capacityLabel,
-                      style: text.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
+                  Text(
+                    event.capacityLabel,
+                    style: text.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   OutlinedButton(
